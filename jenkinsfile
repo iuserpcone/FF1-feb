@@ -1,0 +1,64 @@
+pipeline {
+    agent any
+
+    environment {
+        AWS_ACCESS_KEY_ID = credentials('aws-access-key')  // Jenkins credentials ID for AWS Access Key
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')  // Jenkins credentials ID for AWS Secret Key
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout the code from the Git repository
+                git 'https://github.com/iuserpcone/FF1-feb.git'
+            }
+        }
+        
+        stage('Install Terraform') {
+            steps {
+                // Install Terraform if it is not already installed
+                sh 'terraform --version'
+            }
+        }
+        
+        stage('Terraform Init') {
+            steps {
+                // Initialize the Terraform working directory
+                sh 'terraform init'
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                // Generate and show an execution plan
+                sh 'terraform plan'
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                // Apply the Terraform plan to create EC2 instance
+                // Use `-auto-approve` to avoid manual confirmation during apply
+                sh 'terraform apply -auto-approve'
+            }
+        }
+
+        stage('Clean Up') {
+            steps {
+                // Clean up the working directory after deployment (optional)
+                sh 'terraform destroy -auto-approve'
+            }
+        }
+    }
+
+    post {
+        success {
+            // Notify the success of the pipeline (optional, e.g., via email or Slack)
+            echo 'Terraform Deployment Successful!'
+        }
+        failure {
+            // Notify the failure of the pipeline (optional)
+            echo 'Terraform Deployment Failed.'
+        }
+    }
+}
