@@ -7,37 +7,42 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
                 git 'https://github.com/iuserpcone/FF1-feb.git'
+            }
+        }
+
+        stage('Verify AWS Credentials') {
+            steps {
+                script {
+                    echo "Checking AWS credentials..."
+                    def awsIdentity = sh(script: 'aws sts get-caller-identity', returnStdout: true).trim()
+                    echo "AWS Identity: ${awsIdentity}"
+                }
             }
         }
     
         stage('Terraform Init') {
             steps {
-                // Initialize the Terraform working directory
                 sh 'terraform init'
             }
         }
 
         stage('Terraform Plan') {
             steps {
-                // Generate and show an execution plan
                 sh 'terraform plan'
             }
         }
 
         stage('Terraform Apply') {
             steps {
-                // Apply the Terraform plan to create EC2 instance
-                // Use `-auto-approve` to avoid manual confirmation during apply
                 sh 'terraform apply -auto-approve'
             }
         }
 
-        stage('Clean Up') {
+        stage('Terraform Destroy (Cleanup)') {
             steps {
-                // Clean up the working directory after deployment (optional)
                 sh 'terraform destroy -auto-approve'
             }
         }
@@ -45,12 +50,10 @@ pipeline {
 
     post {
         success {
-            // Notify the success of the pipeline (optional, e.g., via email or Slack)
-            echo 'Terraform Deployment Successful!'
+            echo '✅ Terraform Deployment Successful!'
         }
         failure {
-            // Notify the failure of the pipeline (optional)
-            echo 'Terraform Deployment Failed.'
+            echo '❌ Terraform Deployment Failed!'
         }
     }
 }
