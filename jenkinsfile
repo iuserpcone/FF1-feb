@@ -2,25 +2,17 @@ pipeline {
     agent any
 
     environment {
-        AWS_ACCESS_KEY_ID = credentials('aws-access-key')  // Jenkins credentials ID for AWS Access Key
-        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')  // Jenkins credentials ID for AWS Secret Key
+        AWS_ACCESS_KEY_ID = credentials('aws-access-key')
+        AWS_SECRET_ACCESS_KEY = credentials('aws-secret-key')
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Checkout the code from the Git repository
                 git 'https://github.com/iuserpcone/FF1-feb.git'
             }
         }
-        
-        stage('Install Terraform') {
-            steps {
-                // Install Terraform if it is not already installed
-                sh 'terraform --version'
-            }
-        }
-        
+    
         stage('Terraform Init') {
             steps {
                 // Initialize the Terraform working directory
